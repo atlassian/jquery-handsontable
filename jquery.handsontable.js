@@ -6,6 +6,27 @@
  * http://warpech.github.com/jquery-handsontable/
  */
 /*jslint white: true, browser: true, plusplus: true, indent: 4, maxerr: 50 */
+
+
+
+/************************* CHANGES NOTICE *******************************
+ *  Modified for use in Atlassian Confluence CVIZ "sexy-chart" plug-in
+ *    Original source at: https://github.com/warpech/jquery-handsontable
+ *    Commit key: 13a15a8bed3cd0a4a5ba12720107767a710c4210
+ *
+ *    Changes made to make handson table compatible with 
+ *    an older version of jQuery
+ *
+ *    Summary of changes for the benefit of the upgrader:
+ *      - All jQuery .on calls of the form .on(types, fn) were 
+ *        replaced with .bind calls
+ *      - All jQuery .on calls of the form .on(types, selector, fn) were 
+ *        replaced with .delegate calls
+ *      - Several $() jQuery calls were replaced by AJS.$() calls
+ *        as required in the confluence environment.
+ *
+ ************************************************************************/
+
 (function ($) {
   "use strict";
 
@@ -1100,7 +1121,7 @@
             className: 'htFillBorder'
           });
 
-          $(priv.fillHandle.handle).on('dblclick', autofill.selectAdjacent);
+          $(priv.fillHandle.handle).bind('dblclick', autofill.selectAdjacent);
         }
         else {
           priv.fillHandle.disabled = false;
@@ -1499,12 +1520,12 @@
           }
         }
 
-        priv.editProxy.on('click', onClick);
-        priv.editProxy.on('cut', onCut);
-        priv.editProxy.on('paste', onPaste);
-        priv.editProxy.on('keydown', onKeyDown);
-        priv.editProxy.on('keyup', onKeyUp);
-        priv.editProxy.on('change', onChange);
+        priv.editProxy.bind('click', onClick);
+        priv.editProxy.bind('cut', onCut);
+        priv.editProxy.bind('paste', onPaste);
+        priv.editProxy.bind('keydown', onKeyDown);
+        priv.editProxy.bind('keyup', onKeyUp);
+        priv.editProxy.bind('change', onChange);
         container.append(priv.editProxyHolder);
       },
 
@@ -1807,9 +1828,11 @@
       priv.tableContainer = div[0];
       self.table = $(priv.tableContainer.firstChild);
       priv.tableBody = self.table.find("tbody")[0];
-      self.table.on('mousedown', 'td', interaction.onMouseDown);
-      self.table.on('mouseover', 'td', interaction.onMouseOver);
-      self.table.on('dblclick', 'td', interaction.onDblClick);
+
+      self.table.delegate('td', 'mousedown', interaction.onMouseDown);
+      self.table.delegate('td', 'mouseover', interaction.onMouseOver);
+      self.table.delegate('td', 'dblclick', interaction.onDblClick);
+
       container.append(div);
 
       self.colCount = settings.cols;
@@ -1824,8 +1847,8 @@
 
       this.updateSettings(settings);
 
-      container.on('mouseenter', onMouseEnterTable).on('mouseleave', onMouseLeaveTable);
-      $(priv.currentBorder.main).on('dblclick', interaction.onDblClick);
+      container.bind('mouseenter', onMouseEnterTable).bind('mouseleave', onMouseLeaveTable);
+      $(priv.currentBorder.main).bind('dblclick', interaction.onDblClick);
 
       function onMouseUp() {
         if (priv.isMouseDown) {
@@ -1848,8 +1871,8 @@
         }, 1);
       }
 
-      $("html").on('mouseup', onMouseUp);
-      $("html").on('click', onOutsideClick);
+      $("html").bind('mouseup', onMouseUp);
+      $("html").bind('click', onOutsideClick);
 
       if (container[0].tagName.toLowerCase() !== "html" && container[0].tagName.toLowerCase() !== "body" && container.css('overflow') === 'scroll') {
         priv.scrollable = container;
@@ -1867,7 +1890,7 @@
         priv.scrollable.scrollTop(0);
         priv.scrollable.scrollLeft(0);
 
-        priv.scrollable.on('scroll.handsontable', function () {
+        priv.scrollable.bind('scroll.handsontable', function () {
           self.curScrollTop = priv.scrollable[0].scrollTop;
           self.curScrollLeft = priv.scrollable[0].scrollLeft;
 
@@ -1907,7 +1930,7 @@
         }
       }
 
-      priv.scrollable.on('scroll', function (e) {
+      priv.scrollable.bind('scroll', function (e) {
         e.stopPropagation();
       });
 
@@ -2000,10 +2023,10 @@
           items: items
         });
 
-        $('.context-menu-root').on('mouseenter', onMouseEnterTable).on('mouseleave', onMouseLeaveTable);
+        $('.context-menu-root').bind('mouseenter', onMouseEnterTable).bind('mouseleave', onMouseLeaveTable);
       }
 
-      self.container.on("datachange.handsontable", function (event, changes) {
+      self.container.bind("datachange.handsontable", function (event, changes) {
         if (priv.settings.onChange) {
           priv.settings.onChange(changes);
         }
@@ -2198,7 +2221,7 @@
           thead.appendChild(tr);
         }
         priv.cornerHeader = $(div);
-        priv.cornerHeader.on('click', function () {
+        priv.cornerHeader.bind('click', function () {
           selection.selectAll();
         });
         container.append(priv.cornerHeader);
@@ -2540,7 +2563,7 @@ handsontable.UndoRedo = function (instance) {
   this.rev = -1;
   this.instance = instance;
 
-  instance.container.on("datachange.handsontable", function (event, changes, origin) {
+  instance.container.bind("datachange.handsontable", function (event, changes, origin) {
     if (origin !== 'undo' && origin !== 'redo') {
       that.add(changes);
     }
@@ -2553,7 +2576,7 @@ handsontable.UndoRedo = function (instance) {
 handsontable.UndoRedo.prototype.undo = function () {
   var i, ilen, tmp;
   if (this.isUndoAvailable()) {
-    var changes = $.extend(true, [], this.data[this.rev]); //deep clone
+    var changes = AJS.$.extend(true, [], this.data[this.rev]); //deep clone
     this.instance.setDataAtCell(0, 0, changes);
     for (i = 0, ilen = changes.length; i < ilen; i++) {
       tmp = changes[i][3];
@@ -2572,7 +2595,7 @@ handsontable.UndoRedo.prototype.redo = function () {
   var i, ilen;
   if (this.isRedoAvailable()) {
     this.rev++;
-    var changes = $.extend(true, [], this.data[this.rev]); //deep clone
+    var changes = AJS.$.extend(true, [], this.data[this.rev]); //deep clone
     for (i = 0, ilen = changes.length; i < ilen; i++) {
       changes[i][2] = changes[i][3]; //we need new data at index 2
     }
@@ -2616,14 +2639,14 @@ handsontable.BlockedRows = function (instance) {
   this.headers = [];
   var position = instance.table.position();
   instance.positionFix(position);
-  this.main = $('<div style="position: absolute; top: ' + position.top + 'px; left: ' + position.left + 'px"><table cellspacing="0" cellpadding="0"><thead></thead></table></div>');
-  this.instance.container.on('datachange.handsontable', function (event, changes) {
+  this.main = AJS.$('<div style="position: absolute; top: ' + position.top + 'px; left: ' + position.left + 'px"><table cellspacing="0" cellpadding="0"><thead></thead></table></div>');
+  this.instance.container.bind('datachange.handsontable', function (event, changes) {
     setTimeout(function () {
       that.dimensions(changes);
     }, 10);
   });
   this.instance.container.append(this.main);
-  this.hasCSS3 = !($.browser.msie && (parseInt($.browser.version, 10) <= 8)); //Used to get over IE8- not having :last-child selector
+  this.hasCSS3 = !(AJS.$.browser.msie && (parseInt(AJS.$.browser.version, 10) <= 8)); //Used to get over IE8- not having :last-child selector
   this.update();
 };
 
@@ -2642,12 +2665,12 @@ handsontable.BlockedRows.prototype.createCol = function (className) {
   for (h = 0; h < hlen; h++) {
     $tr = this.main.find('thead tr.' + this.headers[h].className);
     if (!$tr.length) {
-      $tr = $('<tr class="' + this.headers[h].className + '"></tr>');
+      $tr = AJS.$('<tr class="' + this.headers[h].className + '"></tr>');
       this.main.find('thead').append($tr);
     }
     $tr = this.instance.table.find('thead tr.' + this.headers[h].className);
     if (!$tr.length) {
-      $tr = $('<tr class="' + this.headers[h].className + '"></tr>');
+      $tr = AJS.$('<tr class="' + this.headers[h].className + '"></tr>');
       this.instance.table.find('thead').append($tr);
     }
 
@@ -2708,7 +2731,7 @@ handsontable.BlockedRows.prototype.refresh = function () {
       while (thsLen > this.instance.colCount + offset) {
         //remove excessive cols
         thsLen--;
-        $(tr.childNodes[thsLen]).remove();
+        AJS.$(tr.childNodes[thsLen]).remove();
       }
 
       for (h = 0; h < hlen; h++) {
@@ -2749,7 +2772,7 @@ handsontable.BlockedRows.prototype.dimensions = function (changes) {
   if (this.count() > 0) {
     var offset = this.instance.blockedCols.count();
     for (var i = 0, ilen = changes.length; i < ilen; i++) {
-      this.ths[changes[i][1] + offset].style.minWidth = $(this.instance.getCell(changes[i][0], changes[i][1])).width() + 'px';
+      this.ths[changes[i][1] + offset].style.minWidth = AJS.$(this.instance.getCell(changes[i][0], changes[i][1])).width() + 'px';
     }
   }
 };
@@ -2797,13 +2820,13 @@ handsontable.BlockedRows.prototype.destroyHeader = function (className) {
  */
 handsontable.BlockedCols = function (instance) {
   var that = this;
-  this.heightMethod = $.browser.mozilla ? "outerHeight" : "height";
+  this.heightMethod = AJS.$.browser.mozilla ? "outerHeight" : "height";
   this.instance = instance;
   this.headers = [];
   var position = instance.table.position();
   instance.positionFix(position);
-  this.main = $('<div style="position: absolute; top: ' + position.top + 'px; left: ' + position.left + 'px"><table cellspacing="0" cellpadding="0"><thead><tr></tr></thead><tbody></tbody></table></div>');
-  this.instance.container.on('datachange.handsontable', function (event, changes) {
+  this.main = AJS.$('<div style="position: absolute; top: ' + position.top + 'px; left: ' + position.left + 'px"><table cellspacing="0" cellpadding="0"><thead><tr></tr></thead><tbody></tbody></table></div>');
+  this.instance.container.bind('datachange.handsontable', function (event, changes) {
     setTimeout(function () {
       that.dimensions(changes);
     }, 10);
@@ -2884,13 +2907,13 @@ handsontable.BlockedCols.prototype.refresh = function () {
     while (trsLen > this.instance.rowCount) {
       //remove excessive rows
       trsLen--;
-      $(tbody.childNodes[trsLen]).remove();
+      AJS.$(tbody.childNodes[trsLen]).remove();
     }
 
     var realTrs = this.instance.table.find('tbody tr');
     for (i = 0; i < trsLen; i++) {
       for (h = 0; h < hlen; h++) {
-        th = trs[i].getElementsByClassName ? trs[i].getElementsByClassName(this.headers[h].className)[0] : $(trs[i]).find('.' + this.headers[h].className.replace(/\s/i, '.'))[0];
+        th = trs[i].getElementsByClassName ? trs[i].getElementsByClassName(this.headers[h].className)[0] : AJS.$(trs[i]).find('.' + this.headers[h].className.replace(/\s/i, '.'))[0];
         th.innerHTML = this.headers[h].columnLabel(i);
         this.instance.minWidthFix(th);
         th.style.height = realTrs.eq(i).children().first()[this.heightMethod]() + 'px';
@@ -2924,7 +2947,7 @@ handsontable.BlockedCols.prototype.dimensions = function (changes) {
   if (this.count() > 0) {
     var trs = this.main[0].firstChild.getElementsByTagName('tbody')[0].childNodes;
     for (var i = 0, ilen = changes.length; i < ilen; i++) {
-      var $th = $(this.instance.getCell(changes[i][0], changes[i][1]));
+      var $th = AJS.$(this.instance.getCell(changes[i][0], changes[i][1]));
       if ($th.length) {
         trs[changes[i][0]].firstChild.style.height = $th[this.heightMethod]() + 'px';
       }
@@ -2970,16 +2993,16 @@ handsontable.BlockedCols.prototype.destroyHeader = function (className) {
 handsontable.RowHeader = function (instance, labels) {
   var that = this;
   this.className = 'htRowHeader';
-  instance.blockedCols.main.on('mousedown', 'th.htRowHeader', function (event) {
-    if (!$(event.target).hasClass('btn') && !$(event.target).hasClass('btnContainer')) {
+    instance.blockedCols.main.delegate('th.htRowHeader', 'mousedown', function (event) {
+    if (!AJS.$(event.target).hasClass('btn') && !AJS.$(event.target).hasClass('btnContainer')) {
       instance.deselectCell();
-      $(this).addClass('active');
+      AJS.$(this).addClass('active');
       that.lastActive = this;
       var offset = instance.blockedRows.count();
       instance.selectCell(this.parentNode.rowIndex - offset, 0, this.parentNode.rowIndex - offset, instance.colCount - 1, false);
     }
   });
-  instance.container.on('deselect.handsontable', function () {
+  instance.container.bind('deselect.handsontable', function () {
     that.deselect();
   });
   this.labels = labels;
@@ -3004,7 +3027,7 @@ handsontable.RowHeader.prototype.columnLabel = function (index) {
  */
 handsontable.RowHeader.prototype.deselect = function () {
   if (this.lastActive) {
-    $(this.lastActive).removeClass('active');
+    AJS.$(this.lastActive).removeClass('active');
     this.lastActive = null;
   }
 };
@@ -3023,16 +3046,16 @@ handsontable.RowHeader.prototype.destroy = function () {
 handsontable.ColHeader = function (instance, labels) {
   var that = this;
   this.className = 'htColHeader';
-  instance.blockedRows.main.on('mousedown', 'th.htColHeader', function () {
+    instance.blockedRows.main.delegate('th.htColHeader', 'mousedown', function () {
     instance.deselectCell();
-    var $th = $(this);
+    var $th = AJS.$(this);
     $th.addClass('active');
     that.lastActive = this;
     var index = $th.index();
     var offset = instance.blockedCols ? instance.blockedCols.count() : 0;
     instance.selectCell(0, index - offset, instance.rowCount - 1, index - offset, false);
   });
-  instance.container.on('deselect.handsontable', function () {
+  instance.container.bind('deselect.handsontable', function () {
     that.deselect();
   });
   this.instance = instance;
