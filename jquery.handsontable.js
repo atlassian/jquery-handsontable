@@ -1874,12 +1874,12 @@
       $("html").bind('mouseup', onMouseUp);
       $("html").bind('click', onOutsideClick);
 
-      if (container[0].tagName.toLowerCase() !== "html" && container[0].tagName.toLowerCase() !== "body" && container.css('overflow') === 'scroll') {
+      if (container[0].tagName.toLowerCase() !== "html" && container[0].tagName.toLowerCase() !== "body" && container.hasClass("dataTable")){
         priv.scrollable = container;
       }
       else {
         container.parents().each(function () {
-          if (this.tagName.toLowerCase() !== "html" && this.tagName.toLowerCase() !== "body" && $(this).css('overflow') == 'scroll') {
+          if (this.tagName.toLowerCase() !== "html" && this.tagName.toLowerCase() !== "body" && container.hasClass("dataTable")){
             priv.scrollable = $(this);
             return false;
           }
@@ -1924,6 +1924,9 @@
       }
       else {
         priv.scrollable = $(window);
+        // outerWidth and outerHeight sould not be used on the window element
+        priv.scrollable.outerWidth = priv.scrollable.width;
+        priv.scrollable.outerHeight = priv.scrollable.height;
         if (priv.cornerHeader) {
           priv.cornerHeader.find("th:last-child").css({borderRightWidth: 0});
           priv.cornerHeader.find("tr:last-child th").css({borderBottomWidth: 0});
