@@ -10,12 +10,14 @@
 
 
 /************************* CHANGES NOTICE *******************************
- *  Modified for use in Atlassian Confluence CVIZ "sexy-chart" plug-in
+ *  Modified for use in Atlassian Confluence CVIZ "sexy-charts" plug-in
  *    Original source at: https://github.com/warpech/jquery-handsontable
  *    Commit key: 13a15a8bed3cd0a4a5ba12720107767a710c4210
  *
  *    Changes made to make handson table compatible with 
- *    an older version of jQuery
+ *    an older version of jQuery. Other changes made to fix
+ *    incompatibilities discovered with handsontable inside 
+ *    the Confluence environment
  *
  *    Summary of changes for the benefit of the upgrader:
  *      - All jQuery .on calls of the form .on(types, fn) were 
@@ -24,6 +26,11 @@
  *        replaced with .delegate calls
  *      - Several $() jQuery calls were replaced by AJS.$() calls
  *        as required in the confluence environment.
+ *      - $(window).outerWidth was set to use .width instead
+ *      - $(window).outerHeight was set to use .height instead
+ *      - Code that finds the containing scrollable div now searches for
+ *        .hasClass("datatTable") instead of .attr("overflow") == "scroll"
+ *        This allows us to use "overflow: auto" to avoid scrollbars until needed
  *
  ************************************************************************/
 
